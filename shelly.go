@@ -1,8 +1,10 @@
 package shelly
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -28,4 +30,35 @@ func NewSession(stdin io.Reader, stdout, stderr io.Writer) *Session {
 		Stderr: stderr,
 		DryRun: false,
 	}
+}
+
+func (s *Session) Run() {
+	input := bufio.NewReader(s.Stdin)
+	for {
+		fmt.Fprintf(s.Stdout, "> ")
+		line, err := input.ReadString('\n')
+		if err != nil {
+			fmt.Fprintln(s.Stdout, "\nBe seeing you!")
+			break
+		}
+		cmd, err := CmdFromString(line)
+		if err != nil {
+			continue
+		}
+		if s.DryRun {
+			fmt.Fprintf(s.Stdout, "%s", line)
+			continue
+		}
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Fprintln(s.Stderr, "error:", err)
+		}
+		fmt.Fprintf(s.Stdout, "%s", output)
+	}
+
+}
+
+func RunCLI() {
+	session := NewSession(os.Stdin, os.Stdout, os.Stderr)
+	session.Run()
 }

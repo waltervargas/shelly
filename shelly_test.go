@@ -70,7 +70,7 @@ func TestRun(t *testing.T) {
 	session := shelly.NewSession(stdin, stdout, io.Discard)
 	session.DryRun = true
 	session.Run()
-	want := "> hello\n> > \nBe seeing you!\n"
+	want := "> echo hello\n> > \nBe seeing you!\n"
 	got := stdout.String()
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
